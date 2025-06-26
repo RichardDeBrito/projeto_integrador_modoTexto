@@ -59,8 +59,3 @@ export function CreateListScreening(arrayObjScreening: ScreeningModel[] | undefi
         return listScreening;
     }
 }
-
-
-// export function SetUpQueue(screeningList: Screening[]): void {
-    
-// }

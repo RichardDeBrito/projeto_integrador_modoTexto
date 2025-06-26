@@ -144,8 +144,7 @@ while(loopCondition) {
                     breakCondition = false;
                 }
                 console.log();
-            }
-
+            } 
             screeningDelete(patientIdRemoveScreening);
             break;
 
@@ -160,7 +159,7 @@ while(loopCondition) {
             console.clear();
             const listPatient = patientListObj();
             const listNurse = nurseListObj();
-            const listScreening = screeningListObj();
+            const listScreening = screeningListObj(); 
             const patients = CreateListPatient(listPatient);
             const nurses = CreateListNurse(listNurse);
             const screenigs = CreateListScreening(listScreening, patients, nurses);
