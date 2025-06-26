@@ -20,9 +20,9 @@ loopCondition = true;
 while(loopCondition) {
     let option: number;
     console.log();
-    console.log( "-".repeat(45));
+    console.log( "-".repeat(48));
     console.log(' Sistema de Gerenciamento de Fila de Prioridade');
-    console.log( "-".repeat(45));
+    console.log( "-".repeat(48));
     console.log();
     
     console.log(`1 - Cadastrar pacientes:`);
