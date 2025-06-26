@@ -43,6 +43,8 @@ export function printScreening(): void {
         console.log(`Não há triagens cadastradas.`) 
     } else {
         if(screenings === undefined) throw new Error('Erro ao listar triagens.');
+        console.log('Pacientes aguardando na fila de triagem:');
+        console.log();
         for(const screening of screenings) {
             console.log(screening);
         };

@@ -23,7 +23,7 @@ while(loopCondition) {
     console.log(`3 - Buscar dados do paciente por CPF:`);
     console.log(`4 - Triar pacientes:`);
     console.log(`5 - Apagar triagem do paciente por CPF:`);
-    console.log(`6 - Apresentar triagens cadastradas:`);
+    console.log(`6 - Verificar triagens cadastradas:`);
     console.log(`7 - Chamar o próximo paciente da fila:`);
     console.log(`8 - Verificar pacientes cadastrados:`);
     console.log(`0 - Sair do programa:`);
