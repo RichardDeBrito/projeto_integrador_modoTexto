@@ -172,6 +172,8 @@ while(loopCondition) {
             queuePriorityHospital.callNext();
             if(queuePriorityHospital.nextItem !== undefined) {
                 console.log(`Paciente ${queuePriorityHospital.nextItem.patient.name}, Por favor dirigir-se a sala do médico.`);
+            } else {
+                console.log(`Não há mais pacientes na fila de espera.`);
             }
 
             console.log();
