@@ -1,0 +1,8 @@
+# Arquivos temporários de edição
+*~
+# Arquivos de log
+*.log
+# Diretório de build
+build/
+# Diretório de dependências do npm
+node_modules/
