@@ -26,10 +26,10 @@ while(loopCondition) {
     console.log();
     
     console.log(`1 - Cadastrar pacientes:`);
-    console.log(`2 - Remover pacientes por cpf:`);
-    console.log(`3 - Buscar dados do paciente por cpf:`);
+    console.log(`2 - Remover pacientes por CPF:`);
+    console.log(`3 - Buscar dados do paciente por CPF:`);
     console.log(`4 - Triar pacientes:`);
-    console.log(`5 - Apagar triagens do paciente:`);
+    console.log(`5 - Apagar triagem do paciente por CPF:`);
     console.log(`6 - Apresentar triagens cadastradas:`);
     console.log(`7 - Chamar o próximo paciente da fila:`);
     console.log(`8 - Verificar pacientes cadastrados:`);
