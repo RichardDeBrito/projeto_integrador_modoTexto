@@ -21,7 +21,7 @@ while(loopCondition) {
     let option: number;
     console.log();
     console.log( "-".repeat(45));
-    console.log(' Sistema Gerenciamento de Fila de Prioridade');
+    console.log(' Sistema de Gerenciamento de Fila de Prioridade');
     console.log( "-".repeat(45));
     console.log();
     
