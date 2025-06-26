@@ -1,25 +1,87 @@
 import { Database } from "./database";
 import { PatientModel, idPatientModel } from "./models/patientModel";
-import { QueuePriority } from "./classes/queuePriority";
 import { QueuePriorityHospital } from "./classes/queuePriorityHospital";
-import { typeSex } from ".";
+import PromptSync from "prompt-sync";
+import { nurseListObj } from "./nurse-crud";
+import { screeningListObj } from "./screening-crud";
+import { CreateListNurse, CreateListPatient, CreateListScreening } from "./utils/setUpQueue";
 
-export type patientData = 'name' | 'dateOfBirth' | 'cpf' | 'sex' | 'phone' | 'susCard'  
+export type patientData = 'name' | 'dateOfBirth' | 'cpf' | 'sex' | 'phone' | 'susCard';
 
-export function patientCreate(name: string, dateOfBirth: string, cpf: string, sex: typeSex | undefined, phone: string, susCard: string): void {
+const prompt = PromptSync();
+
+export function callNextPatient() :void {
+    console.clear();
+    const listPatient = patientListObj();
+    const listNurse = nurseListObj();
+    const listScreening = screeningListObj(); 
+    const patients = CreateListPatient(listPatient);
+    const nurses = CreateListNurse(listNurse);
+    const screenigs = CreateListScreening(listScreening, patients, nurses);
+    const queuePriorityHospital = new QueuePriorityHospital();
     
+    for(let i = 0; i < screenigs.length; i++) {
+        queuePriorityHospital.queueForTriage(screenigs[i]);
+    }
+    
+    queuePriorityHospital.callNext();
+    if(queuePriorityHospital.nextItem !== undefined) {
+        console.log(`Paciente ${queuePriorityHospital.nextItem.patient.name}, Por favor dirigir-se a sala do médico.`);
+    } else {
+        console.log(`Não há mais pacientes na fila de espera.`);
+    }
+    
+    console.log();
+}
+
+export function patientCreate(): void {
+    console.clear();
+    console.log();
+    console.log( "-".repeat(22));
+    console.log(' Cadastro de pcientes');
+    console.log( "-".repeat(22));
+    console.log();
+
     try {
+        const name = prompt(`Digite o nome do paciente: `);         
+        const dateOfBirth = prompt(`Digite a data de nascimento do paciente: `);         
+        const cpf = prompt(`Digite o CPF do paciente: `);  
+        
+        let sex: string | null = null;
+
+        while(true) {
+            console.log();
+            console.log('Digite um desses valores:');
+            console.log();
+            console.log(`M - masculino F - feminino`);
+            console.log();
+            const valueSex = prompt(`Sexo do paciente: `);
+            if(valueSex === null) continue;
+            
+            const upperValueSex = valueSex.toUpperCase();
+            if(upperValueSex === 'M' || upperValueSex === 'F') {
+                sex = upperValueSex;
+                break;
+        }
+            
+            console.log();
+            console.log('Valor invalido, digite M ou F');
+            console.log();
+        }
+        
+        const phone = prompt(`Digite o telefone do paciente: `);         
+        const susCard = prompt(`Digite o cartão do SUS do paciente: `);   
+        console.log();    
+
         const sql = 'INSERT INTO Paciente (nome, datanasc, cpf, sexo, telefone, sus_card) VALUES (?,?,?,?,?,?)';
         Database.queryNone(sql, [name, dateOfBirth, cpf, sex, phone, susCard]);
 
         console.clear();
-
         console.log(`Paciente ${name} cadastrado com sucesso!`);
-
         console.log();
         
     } catch (error) {
-        console.log(`Erro ao inserir paciente: ${error as Error}.message`);
+        console.error(`Erro ao inserir paciente: ${(error as Error).message}`);
     }
 }
 
@@ -31,11 +93,12 @@ export function patientListObj(): PatientModel[] | undefined {
         return data;
 
     } catch (error){
-        console.log(`Erro ao retornar lista de pacientes: ${error as Error}.message`);
+        console.error(`Erro ao retornar lista de pacientes: ${error as Error}.message`);
     };
 }
 
 export function patientList(): void | undefined {
+    console.clear();
     try {
         const sql = 'SELECT nome, datanasc, cpf, sexo, telefone, sus_card FROM Paciente'
         const data = Database.queryMany<PatientModel>(sql);
@@ -53,13 +116,18 @@ export function patientList(): void | undefined {
         }
 
     } catch (error){
-        console.log(`Erro ao listar paciente: ${error as Error}.message`);
+        console.error(`Erro ao listar paciente: ${error as Error}.message`);
         console.log();
     };
 }
 
-export function patientDelete(cpf: string) {
+export function patientDelete() {
     try {
+        console.clear();
+        patientList();
+        const cpfRemove = prompt(`Digite o cpf do paciente que você deseja remover: `);
+        console.log();
+
         // COMANDOS SQL
         const sqlSelectAll = 'SELECT  nome, datanasc, cpf, sexo, telefone, sus_card FROM Paciente';
         const sqlDropTable = 'DROP TABLE Paciente';
@@ -67,11 +135,12 @@ export function patientDelete(cpf: string) {
         const sqlCreateTable = 'CREATE TABLE IF NOT EXISTS "Paciente" ( "id_paciente"	INTEGER, "nome"	TEXT NOT NULL, "datanasc" TEXT NOT NULL, "cpf"	TEXT NOT NULL UNIQUE,"sexo"	char(2) NOT NULL, "telefone"	TEXT, "sus_card"	TEXT NOT NULL UNIQUE, PRIMARY KEY("id_paciente" AUTOINCREMENT))';
         const sqlInsertTable = 'INSERT INTO Paciente (nome, datanasc, cpf, sexo, telefone, sus_card) VALUES (?,?,?,?,?,?)'
 
-        const deletePatient = patientID(cpf);
+        const deletePatient = patientID(cpfRemove);
         
         if(deletePatient !== undefined) {
-            Database.queryNone(sqlDelete, [cpf]);
-            console.log(`Paciente com cpf ${cpf} foi removido com sucesso!`);
+            Database.queryNone(sqlDelete, [cpfRemove]);
+            console.clear();
+            console.log(`Paciente com cpf ${cpfRemove} foi removido com sucesso!`);
         };
 
         const patientTableData = Database.queryMany<PatientModel>(sqlSelectAll);
@@ -84,7 +153,7 @@ export function patientDelete(cpf: string) {
 
         console.log();
     } catch (error) {
-        console.log(`Erro ao deletar paciente: ${error as Error}.message`);
+        console.error(`Erro ao deletar paciente: ${error as Error}.message`);
         console.log();
     }
 }
@@ -99,20 +168,26 @@ export function patientID(cpf: string): number | unknown {
         return idPatient;
 
     } catch (error) {
-        console.log(`Erro ao buscar id do paciente: ${error as Error}`);
+        console.error(`Erro ao buscar id do paciente: ${error as Error}`);
         console.log();
     }
     
 }
 
-export function patientGiven(cpf: string) {
+export function patientGiven() {
+    console.clear();
+    patientList();
+    console.log();
+
     try {
+        const cpfPatient = prompt(`Digite qual o cpf do paciente: `);
         const sql = `SELECT * FROM Paciente WHERE cpf = ?`;
-        const data = Database.queryOne<PatientModel>(sql, [cpf]);
+        const data = Database.queryOne<PatientModel>(sql, [cpfPatient]);
 
-        if(data === undefined) throw new Error(`Paciente de cpf ${cpf} não foi encontrado.`);
+        if(data === undefined) throw new Error(`Paciente de cpf ${cpfPatient} não foi encontrado.`);
 
-        console.log(`Dados do paciente com cpf ${cpf}:`);
+        console.clear();
+        console.log(`Dados do paciente com cpf ${cpfPatient}:`);
         console.log();
         console.log(`Nome: ${data.nome}`);
         console.log(`Data de nascimento: ${data.datanasc}:`);
@@ -123,7 +198,7 @@ export function patientGiven(cpf: string) {
         console.log();     
 
     } catch (error) {
-        console.log(`Erro ao buscar dado do paciente: ${error as Error}`)
+        console.error(`Erro ao buscar dado do paciente: ${error as Error}`)
         console.log();
     }
 }

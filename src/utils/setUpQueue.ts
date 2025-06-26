@@ -1,5 +1,3 @@
-import { Database } from "../database";
-import { QueuePriorityHospital } from "../classes/queuePriorityHospital";
 import { Patient } from "../classes/patient";
 import { Nurse } from "../classes/nurse";
 import { Screening } from "../classes/screening";
