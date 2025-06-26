@@ -3,12 +3,12 @@ import PromptSync from "prompt-sync";
 import { patientGiven, patientCreate, patientDelete, patientList, patientID, patientListObj } from "./patient-crud";
 import { QueuePriorityHospital, } from "./classes/queuePriorityHospital";
 import { nurseID, nurseList, nurseListObj } from "./nurse-crud";
-import { screeningCreate, screeningDelete, screeningList, screeningListObj, patientListScreening} from "./screening-crud";
+import { screeningCreate, screeningDelete, screeningList, screeningListObj, patientListScreening, patientListNotScreening} from "./screening-crud";
 import { getDateTime } from "./utils/dateTime";
 import { CreateListPatient, CreateListNurse, CreateListScreening } from "./utils/setUpQueue";
-import { PatientModel } from "./models/patientModel";
 import { ScreeningModel } from "./models/screeningModel";
-import { getMinutesBetweenDates } from "./utils/dateTime";
+
+export type typeSex = 'M' | 'F';
 
 const dbFilename = './src/database.db'
 Database.connect(dbFilename);
@@ -37,7 +37,7 @@ while(loopCondition) {
     
     console.log();
     
-    option = parseInt(prompt('Escolha uma opção digitando um número:'))
+    option = parseInt(prompt('Escolha uma opção digitando um número: '));
     console.log();
     
     switch (option) {
@@ -45,13 +45,27 @@ while(loopCondition) {
             console.clear();
             const name = prompt(`Digite o nome do paciente: `);         
             const dateOfBirth = prompt(`Digite a data de nascimento do paciente: `);         
-            const cpf = prompt(`Digite o CPF do paciente: `);         
-            const sex = prompt(`Digite o sexo do paciente: `);         
+            const cpf = prompt(`Digite o CPF do paciente: `);  
+            let valueSex: string;
+            while(true) {
+                console.log();
+                console.log('Digite um desses valores:');
+                console.log();
+                console.log(`M - masculino F - feminino`);
+                console.log();
+                valueSex = prompt(`Sexo do paciente: `).toUpperCase();
+                if(valueSex === 'M' || valueSex === 'F') {
+                    break;
+                }
+                console.log();
+                console.log('Valor invalido, digite M ou F');
+                console.log();
+            }
             const phone = prompt(`Digite o telefone do paciente: `);         
             const susCard = prompt(`Digite o cartão do SUS do paciente: `);   
             console.log();      
             
-            patientCreate(name,dateOfBirth, cpf, sex, phone, susCard);
+            patientCreate(name,dateOfBirth, cpf, valueSex, phone, susCard);
             break;
         
         case 2:
@@ -90,7 +104,7 @@ while(loopCondition) {
             nurseList();
             let nurseId: unknown;
             while(nurseId === undefined) {
-                const nurseCoren = prompt(`Digite o coren do enfermeiro que está efetuando a triagem: `)
+                const nurseCoren = prompt(`Digite o coren do enfermeiro que está efetuando a triagem: `).toUpperCase();
                 console.log();
                 nurseId = nurseID(nurseCoren);
             }
@@ -130,29 +144,45 @@ while(loopCondition) {
             break;
 
         case 5:
-            console.clear();
-            patientList();
-            let cpfRemoveScreening: string;
-            let patientIdRemoveScreening: number | unknown;
-            let breakCondition = true;
+            console.clear(); 
+            const patientsInScreening = patientListNotScreening();
+            
+            if (!patientsInScreening) {
+                console.log('Não há pacientes na fila de triagem.');
+                console.log();
+                break;
+            }
 
-            while(breakCondition) {
-                cpfRemoveScreening = prompt(`Digite o CPF do paciente que deseja deletar as triagens: `)
-                patientIdRemoveScreening = patientID(cpfRemoveScreening);
+            console.log('Pacientes na fila de triagem:');
+            console.log();
+            for (const patient of patientsInScreening) {
+                console.log(`Nome: ${patient.nome} CPF: ${patient.cpf}`);
+                console.log();
+            }
+
+            while (true) {
+                const cpfRemoveScreening = prompt(`Digite o CPF do paciente que deseja deletar a triagem: `);
+                const patientIdRemoveScreening = patientID(cpfRemoveScreening);
 
                 if (patientIdRemoveScreening !== undefined) {
-                    breakCondition = false;
+                    screeningDelete(patientIdRemoveScreening);
+                    break;
+                } else {
+                    console.log('CPF inválido. Tente novamente.');
+                    console.log();
                 }
-                console.log();
-            } 
-            screeningDelete(patientIdRemoveScreening);
+            }
             break;
 
         case 6:
             console.clear();
             const screenings = screeningList();
-            console.log(screenings);
-            console.log();
+            if(screenings?.length === 0) {
+                console.log(`Não há triagens cadastradas.`) 
+            } else {
+                console.log(screenings);
+                console.log();
+            }
             break;
         
         case 7:
@@ -181,7 +211,9 @@ while(loopCondition) {
 
         case 8:
             console.clear();
-            patientList();
+            const constPatientList = patientList();
+            constPatientList
+            
             break;
 
         case 0:

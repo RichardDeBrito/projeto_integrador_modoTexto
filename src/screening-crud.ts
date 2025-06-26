@@ -8,6 +8,8 @@ export function screeningCreate(dateTimeScreening: string, symptoms: string, pre
         const sql = 'INSERT INTO Triagem (data_hora_triagem, sintomas, pressao, temperatura, frequencia_cardiaca, paciente_id, enfermeiro_id, prioridade_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
         Database.queryNone(sql, [dateTimeScreening, symptoms, pressure, temperature, heartFrequency, patientId, nurseId, priorityId]);
 
+        console.clear();
+
         console.log(`Triagem efetuada com sucesso!`)
         console.log();
         
@@ -16,7 +18,7 @@ export function screeningCreate(dateTimeScreening: string, symptoms: string, pre
     }
 }
 
-export function screeningList(): object | undefined {
+export function screeningList(): ScreeningModel[] | undefined {
     try {
         const sql = 'SELECT T.data_hora_triagem, T.sintomas, T.temperatura, T.frequencia_cardiaca, P.nome AS nome_paciente, E.nome AS nome_enfermeiro, Pri.cor AS cor_prioridade FROM Triagem AS T JOIN Paciente AS P ON T.paciente_id = P.id_paciente JOIN Enfermeiro AS E ON E.id_enfermeiro = enfermeiro_id JOIN Prioridade AS Pri ON T.prioridade_id = Pri.id_prioridade'
         const data = Database.queryMany<ScreeningModel>(sql);
@@ -67,5 +69,16 @@ export function patientListScreening() {
         }
     } catch(error) {
         console.error(`Falha ao tentar listar pacientes em triagem: ${error as Error}.message`);
+    }
+}
+
+export function patientListNotScreening(): PatientModel[] | undefined {
+    const sql = 'SELECT P.nome, P.cpf FROM Paciente AS P INNER JOIN Triagem AS T ON P.id_paciente = T.paciente_id';
+    const patientsInScreening = Database.queryMany<PatientModel>(sql);
+    
+    if (patientsInScreening.length === 0) {
+        return undefined;
+    } else {
+        return patientsInScreening;
     }
 }
